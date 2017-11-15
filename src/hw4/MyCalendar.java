@@ -43,6 +43,7 @@ public class MyCalendar {
 	static ArrayList<JButton> listOfButtons = new ArrayList<JButton>();
 	private static int spaceCounter = 0;
 	private static String monthString = "";
+	private static int todayDate; 
 	
 	/**
 	 * Constructor for MyCalendar, creates a new MyCalendar object 
@@ -52,6 +53,10 @@ public class MyCalendar {
 		calendarToEvent = new TreeMap<Calendar, TreeSet<Event>>();
 	}
 	
+	
+	public static int getTodayDate() {
+		return todayDate;
+	}
 	
 	/**
 	 * displayMainMenuWithEvents displays the calendar with the day with events highlighted with brackets ({}) around them
@@ -117,7 +122,8 @@ public class MyCalendar {
 		String toReturn = "";
 		MONTHS[] arrayOfMonths = MONTHS.values(); // should be in constructor
 		DAYS[] arrayOfDays = DAYS.values();
-		int todayDate = c.get(Calendar.DAY_OF_MONTH);
+		todayDate = c.get(Calendar.DAY_OF_MONTH);
+		System.out.println("todaydate: " + todayDate);
 		int todayDayOfWeek = c.get(Calendar.DAY_OF_WEEK);
 		int month = c.get(Calendar.MONTH);
 
@@ -149,7 +155,7 @@ public class MyCalendar {
 				}
 				if (((i - firstDayOfWeek + 1) == todayDate) && (month == temp1.get(GregorianCalendar.MONTH))
 						&& (c.get(Calendar.YEAR) == temp1.get(GregorianCalendar.YEAR))) {
-					JButton button = new JButton ("[" + Integer.toString(i - firstDayOfWeek + 1) + "]");
+					JButton button = new JButton ( Integer.toString(i - firstDayOfWeek + 1) );
 					listOfButtons.add(button);
 				} else {
 					JButton button = new JButton (Integer.toString(i - firstDayOfWeek + 1));
