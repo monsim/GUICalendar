@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class MyCalendarTester {
 	static int currentDate;
@@ -26,13 +27,11 @@ public class MyCalendarTester {
 		/*
 		 * should create new myCalendar object
 		 */
-		MyCalendar myCal = new MyCalendar();
+		MyCalendarModel myCal = new MyCalendarModel();
 		GregorianCalendar cal = new GregorianCalendar();
 		String toDisplay = myCal.displayMainMenu(cal);
 	
-		
 		String month = myCal.getMonthString();
-		month += "\n";
 		JLabel daysOfWeek = new JLabel("Su         Mo       Tu       We       Th       Fr      Sa");
 		System.out.println("month: " + month);
 		JLabel monthTextArea = new JLabel(month); 
@@ -55,15 +54,52 @@ public class MyCalendarTester {
 		createButton.setOpaque(true);
 		createButton.setBackground(Color.RED);
 		createButton.addMouseListener(new MouseListener() {
-			public void mouseClicked(MouseEvent event) {
+			public void mouseClicked(MouseEvent event) {		//create dialog pop up
 				System.out.println("create clicked");
+				
 				JDialog createDialog = new JDialog();
-				createDialog.setLayout(new BorderLayout());
-				createDialog.add(new JTextArea("Create an event"), BorderLayout.NORTH);
-				createDialog.setMinimumSize(new Dimension(250, 250));
-				createDialog.setPreferredSize(new Dimension(250, 250));
-				createDialog.setMaximumSize(new Dimension(250, 250));
+				createDialog.setLayout(new BorderLayout(20, 20));
+				createDialog.setSize(450, 100);
+				createDialog.setTitle("Create an event");
+				JPanel textFieldPanel = new JPanel();
+
+			
+				JTextField eventName = new JTextField();
+				eventName.setText("Untitled Event");
+				eventName.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+				
+				JTextField eventDate = new JTextField();
+				//eventDate.setText(model.getDateDescription2(cal));
+				eventDate.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+				eventDate.setEditable(false);
+
+				
+				JTextField eventStartTime = new JTextField();
+				String time = cal.get(Calendar.HOUR_OF_DAY) + ":";
+				int minute = cal.get(Calendar.MINUTE);
+				if (minute < 10) 
+					time += "0" + minute;
+				else 
+					time += minute;
+
+				eventStartTime.setText(time);
+				eventStartTime.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+				// EventEndTime
+				JTextField eventEndTime = new JTextField();
+				eventEndTime.setText("23:59");
+				eventEndTime.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+				
+				textFieldPanel.add(eventDate);
+				textFieldPanel.add(eventStartTime);
+				textFieldPanel.add(eventEndTime);
+
+				createDialog.add(eventName, BorderLayout.NORTH);
+				createDialog.add(textFieldPanel, BorderLayout.SOUTH);
+				
 				createDialog.setVisible(true);
+				
 			}
 
 			@Override
@@ -119,9 +155,16 @@ public class MyCalendarTester {
 				public void actionPerformed(ActionEvent e) {
 					System.out.println("button pressed");
 					System.out.println("name: " + button.getName());
+					JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
+					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+					JButton prevButton = myCal.listOfButtons.get(currentDate-1);
+					prevButton.setBorder(BorderFactory.createEmptyBorder());
+					currentDate = Integer.parseInt(button.getName());
 					JTextArea dayText = new JTextArea();
 					rightPanel.removeAll();
+					dayText.removeAll();
 					dayText.setText("well let's see " + button.getName());
+					System.out.println("button.getName(): " + button.getName());
 					rightPanel.add(dayText);
 					rightPanel.setVisible(true);
 				}
@@ -140,6 +183,59 @@ public class MyCalendarTester {
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 					JButton prevButton = myCal.listOfButtons.get(currentDate);
 					prevButton.setBorder(BorderFactory.createEmptyBorder());
+					JTextArea dayText = new JTextArea();
+					rightPanel.removeAll();
+					dayText.removeAll();
+					dayText.setText("well let's see " + b.getName());
+					System.out.println("button.getName(): " + b.getName());
+					rightPanel.add(dayText);
+					rightPanel.setVisible(true);
+				} else { //go to previous month
+					cal.add(Calendar.MONTH, -1);
+					String toDisplay = myCal.displayMainMenu(cal);
+					String month = myCal.getMonthString();
+					monthTextArea.removeAll();
+					calendarPanel.removeAll();
+					monthTextArea.setText(month); 
+					currentDate = myCal.getNumberOfDays();
+					System.out.println("currentdate: " + currentDate);
+					for (int i = 0; i < myCal.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
+						JButton button = new JButton();
+						button.setEnabled(false);
+						button.setBorder(BorderFactory.createEmptyBorder());
+						calendarPanel.add(button);
+					}
+					for (int i = 0; i < myCal.listOfButtons.size(); i++) {
+						JButton button = myCal.listOfButtons.get(i);
+						calendarPanel.add(button);
+						button.setName(Integer.toString(i+1));
+						if (button.getName().equals(Integer.toString(currentDate))) { //todays date
+							button.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+//							currentDate = myCal.getTodayDate();
+						} else {
+							button.setBorder(BorderFactory.createEmptyBorder());
+						}
+						button.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								System.out.println("button pressed");
+								System.out.println("name: " + button.getName());
+								JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
+								b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+								JButton prevButton = myCal.listOfButtons.get(currentDate-1);
+								prevButton.setBorder(BorderFactory.createEmptyBorder());
+								currentDate = Integer.parseInt(button.getName());
+								JTextArea dayText = new JTextArea();
+								rightPanel.removeAll();
+								dayText.removeAll();
+								dayText.setText("well let's see " + button.getName());
+								System.out.println("button.getName(): " + button.getName());
+								rightPanel.add(dayText);
+								rightPanel.setVisible(true);
+							}
+						});
+					}
+					calendarPanel.repaint();
+					monthTextArea.repaint();
 				}
 			}
 		});
@@ -148,12 +244,69 @@ public class MyCalendarTester {
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("next button");
-				currentDate++;
-				System.out.println("current: " + currentDate);
-				JButton b = myCal.listOfButtons.get(currentDate-1);
-				b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-				JButton prevButton = myCal.listOfButtons.get(currentDate-2);
-				prevButton.setBorder(BorderFactory.createEmptyBorder());
+				int numberOfDays = myCal.getNumberOfDays();
+				if (currentDate < numberOfDays){
+					currentDate++;
+					System.out.println("current: " + currentDate);
+					JButton b = myCal.listOfButtons.get(currentDate-1);
+					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+					JButton prevButton = myCal.listOfButtons.get(currentDate-2);
+					prevButton.setBorder(BorderFactory.createEmptyBorder());
+					JTextArea dayText = new JTextArea();
+					rightPanel.removeAll();
+					dayText.removeAll();
+					dayText.setText("well let's see " + b.getName());
+					System.out.println("button.getName(): " + b.getName());
+					rightPanel.add(dayText);
+					rightPanel.setVisible(true);
+				} else { //go to next month
+					cal.add(Calendar.MONTH, 1);
+					cal.set(Calendar.DAY_OF_MONTH, 1);
+					String toDisplay = myCal.displayMainMenu(cal);
+					String month = myCal.getMonthString();
+					monthTextArea.removeAll();
+					calendarPanel.removeAll();
+					monthTextArea.setText(month);
+					currentDate = 1;
+					for (int i = 0; i < myCal.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
+						JButton button = new JButton();
+						button.setEnabled(false);
+						button.setBorder(BorderFactory.createEmptyBorder());
+						calendarPanel.add(button);
+					}
+					for (int i = 0; i < myCal.listOfButtons.size(); i++) {
+						JButton button = myCal.listOfButtons.get(i);
+						calendarPanel.add(button);
+						button.setName(Integer.toString(i+1));
+						if (button.getName().equals(Integer.toString(myCal.getTodayDate()))) { //todays date
+							button.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+							currentDate = myCal.getTodayDate();
+						} else {
+							button.setBorder(BorderFactory.createEmptyBorder());
+						}
+						button.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								System.out.println("button pressed");
+								System.out.println("name: " + button.getName());
+								JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
+								b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+								JButton prevButton = myCal.listOfButtons.get(currentDate-1);
+								prevButton.setBorder(BorderFactory.createEmptyBorder());
+								currentDate = Integer.parseInt(button.getName());
+								JTextArea dayText = new JTextArea();
+								rightPanel.removeAll();
+								dayText.removeAll();
+								dayText.setText("well let's see " + button.getName());
+								System.out.println("button.getName(): " + button.getName());
+								rightPanel.add(dayText);
+								rightPanel.setVisible(true);
+							}
+						});
+					}
+					
+					calendarPanel.repaint();
+					monthTextArea.repaint();
+				}
 			}
 		});
 		
@@ -173,27 +326,19 @@ public class MyCalendarTester {
 		previousNextQuitPanel.add(previousButton);
 		previousNextQuitPanel.add(nextButton);
 		previousNextQuitPanel.add(quitButton);
-		
-		
+			
 		prevNextCreatePanel.add(previousNextQuitPanel, BorderLayout.NORTH);
 		prevNextCreatePanel.add(createAndMonthPanel, BorderLayout.SOUTH);
-//		addButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent event) {
-//				String textToAdd = textField.getText();
-//				area.addItem(textToAdd);
-//				textArea.setText(area.format());
-//			}
-//		});
 		
 		
 		calendarPanel.setLayout(new GridLayout(5,7));
 		leftPanel.setLayout(new BorderLayout());
 		leftPanel.add(calendarPanel, BorderLayout.SOUTH);
-//		frame.add(previousNextQuitPanel, BorderLayout.SOUTH);
 		leftPanel.add(prevNextCreatePanel, BorderLayout.NORTH);
 		calendarPanel.setPreferredSize(new Dimension(300,230));
 		leftPanel.setVisible(true);
 		
+		overarchingFrame.setTitle("Your Calendar");
 		overarchingFrame.setLayout(new BorderLayout());
 		overarchingFrame.add(leftPanel, BorderLayout.WEST);
 		overarchingFrame.add(rightPanel, BorderLayout.EAST);
@@ -206,44 +351,44 @@ public class MyCalendarTester {
 		
 		
 		
-		while (true) {
-			if (input.equals("l")) {
-				myCal.load();
-				myCal.displayMainMenu(cal);
-				displayOptions();
-				input = sc.nextLine().toLowerCase();
-				// need to display calendar WITH EVENTS
-
-			} else if (input.equals("v")) {
-				myCal.viewBy();
-				myCal.displayMainMenu(cal);
-				displayOptions();
-				input = sc.nextLine().toLowerCase();
-			} else if (input.equals("c")) {
-				myCal.create();
-				myCal.displayMainMenu(cal);
-				displayOptions();
-				input = sc.nextLine().toLowerCase();
-			} else if (input.equals("g")) {
-				myCal.goTo();
-				displayOptions();
-				input = sc.nextLine().toLowerCase();
-			} else if (input.equals("e")) {
-				myCal.eventList();
-				myCal.displayMainMenu(cal);
-				displayOptions();
-				input = sc.nextLine().toLowerCase();
-			} else if (input.equals("d")) {
-				myCal.delete();
-				myCal.displayMainMenu(cal);
-				displayOptions();
-				input = sc.nextLine().toLowerCase();
-			} else /* if (input.equals("q")) */ {
-				myCal.quit();
-				break;
-			}
-
-		}
+//		while (true) {
+//			if (input.equals("l")) {
+//				myCal.load();
+//				myCal.displayMainMenu(cal);
+//				displayOptions();
+//				input = sc.nextLine().toLowerCase();
+//				// need to display calendar WITH EVENTS
+//
+//			} else if (input.equals("v")) {
+//				myCal.viewBy();
+//				myCal.displayMainMenu(cal);
+//				displayOptions();
+//				input = sc.nextLine().toLowerCase();
+//			} else if (input.equals("c")) {
+//				myCal.create();
+//				myCal.displayMainMenu(cal);
+//				displayOptions();
+//				input = sc.nextLine().toLowerCase();
+//			} else if (input.equals("g")) {
+//				myCal.goTo();
+//				displayOptions();
+//				input = sc.nextLine().toLowerCase();
+//			} else if (input.equals("e")) {
+//				myCal.eventList();
+//				myCal.displayMainMenu(cal);
+//				displayOptions();
+//				input = sc.nextLine().toLowerCase();
+//			} else if (input.equals("d")) {
+//				myCal.delete();
+//				myCal.displayMainMenu(cal);
+//				displayOptions();
+//				input = sc.nextLine().toLowerCase();
+//			} else /* if (input.equals("q")) */ {
+//				myCal.quit();
+//				break;
+//			}
+//
+//		}
 	}
 	
 	

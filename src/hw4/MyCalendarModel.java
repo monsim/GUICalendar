@@ -36,7 +36,7 @@ enum LONGDAYS {
 }
 
 
-public class MyCalendar {
+public class MyCalendarModel {
 
 	private static TreeMap<Calendar, TreeSet<Event>> calendarToEvent;
 	private static final String EVENTSTXT = "events.txt";
@@ -44,12 +44,13 @@ public class MyCalendar {
 	private static int spaceCounter = 0;
 	private static String monthString = "";
 	private static int todayDate; 
+	private static int numberOfDays;
 	
 	/**
 	 * Constructor for MyCalendar, creates a new MyCalendar object 
 	 *
 	 */
-	public MyCalendar() {
+	public MyCalendarModel() {
 		calendarToEvent = new TreeMap<Calendar, TreeSet<Event>>();
 	}
 	
@@ -115,10 +116,20 @@ public class MyCalendar {
 	
 	
 	/**
+	 * returns number of days in the current month
+	 * @return
+	 */
+	public static int getNumberOfDays() {
+		return numberOfDays;
+	}
+	
+	/**
 	 * displayMainMenu displays the calendar with the day with today highlighted with brackets ([ ]) around it
 	 * @param c the calendar to use to display   
 	 */
 	public static String displayMainMenu(Calendar c) { 
+		listOfButtons.clear();
+		spaceCounter = 0;
 		String toReturn = "";
 		MONTHS[] arrayOfMonths = MONTHS.values(); // should be in constructor
 		DAYS[] arrayOfDays = DAYS.values();
@@ -126,11 +137,13 @@ public class MyCalendar {
 		System.out.println("todaydate: " + todayDate);
 		int todayDayOfWeek = c.get(Calendar.DAY_OF_WEEK);
 		int month = c.get(Calendar.MONTH);
+		
+		
 
 		GregorianCalendar temp1 = new GregorianCalendar(c.get(Calendar.YEAR), c.get(Calendar.MONTH), 1);
 		int firstDayOfWeek = temp1.get(Calendar.DAY_OF_WEEK);
-		int numberOfDays = temp1.getActualMaximum(Calendar.DAY_OF_MONTH);
-		monthString += (arrayOfMonths[temp1.get(GregorianCalendar.MONTH)] + " " + temp1.get(GregorianCalendar.YEAR));
+		numberOfDays = temp1.getActualMaximum(Calendar.DAY_OF_MONTH);
+		monthString = (arrayOfMonths[temp1.get(GregorianCalendar.MONTH)] + " " + temp1.get(GregorianCalendar.YEAR));
 		toReturn += monthString;
 		toReturn += "\n";
 
@@ -340,6 +353,14 @@ public class MyCalendar {
 				}
 			}
 		}
+	}
+	
+	public static void addMonth() {
+		
+	}
+	
+	public static void subtractMonth() {
+		
 	}
 
 	/**
