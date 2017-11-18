@@ -123,6 +123,8 @@ public class MyCalendarModel {
 		return numberOfDays;
 	}
 	
+	
+	
 	/**
 	 * displayMainMenu displays the calendar with the day with today highlighted with brackets ([ ]) around it
 	 * @param c the calendar to use to display   
@@ -355,13 +357,7 @@ public class MyCalendarModel {
 		}
 	}
 	
-	public static void addMonth() {
-		
-	}
-	
-	public static void subtractMonth() {
-		
-	}
+
 
 	/**
 	 * a method to get the events on a day
@@ -369,6 +365,20 @@ public class MyCalendarModel {
 	 * @return a string of all the events on the given day
 	 */
 	public static String getValues(Calendar calendar) {
+		String toReturn = "";
+		TreeSet<Event> values = calendarToEvent.get(calendar);
+		if (values == null) {
+			return toReturn;
+		}
+		for (Event e : values) {
+			toReturn += e.toString() + "\n";
+		}
+		return toReturn;
+	}
+	
+	public static String getValues(int month, int date, int year) {
+		Calendar calendar = new GregorianCalendar((year), (month), (date));
+		System.out.println("monthV: " + calendar.get(Calendar.MONTH) + "dayV: " + calendar.get(Calendar.DAY_OF_MONTH) + "yearV: " + calendar.get(Calendar.YEAR));
 		String toReturn = "";
 		TreeSet<Event> values = calendarToEvent.get(calendar);
 		if (values == null) {
@@ -515,6 +525,13 @@ public class MyCalendarModel {
 		} catch (IOException e) {
 			System.out.println("error");
 		}
+	}
+	
+	public static String getDateString(Calendar cal) {
+		String month = Integer.toString(cal.get(Calendar.MONTH)+1);
+		String day = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
+		String year = Integer.toString(cal.get(Calendar.YEAR));
+		return month + "/" + day + "/" + year;
 	}
 
 	/**

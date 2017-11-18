@@ -21,16 +21,22 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class MyCalendarTester {
+public class SimpleCalendar {
+	
+	//problem: when we go forward month it works fine, but when we go back it goes back two months, although displaying the proper month
 	static int currentDate;
+	private static JTextArea dayText = new JTextArea();
+	private static JTextArea dayEventsText = new JTextArea();
 	public static void main(String[] args) {
 		/*
 		 * should create new myCalendar object
 		 */
 		MyCalendarModel myCal = new MyCalendarModel();
 		GregorianCalendar cal = new GregorianCalendar();
+		myCal.load();
 		String toDisplay = myCal.displayMainMenu(cal);
 	
+		
 		String month = myCal.getMonthString();
 		JLabel daysOfWeek = new JLabel("Su         Mo       Tu       We       Th       Fr      Sa");
 		System.out.println("month: " + month);
@@ -44,6 +50,9 @@ public class MyCalendarTester {
 		rightPanel.setMinimumSize(new Dimension(340, 340));
 		rightPanel.setPreferredSize(new Dimension(340, 340));
 		rightPanel.setMaximumSize(new Dimension(340, 340));
+		rightPanel.setLayout(new BorderLayout());
+		
+		
 		
 		JLabel createButton = new JLabel("CREATE");
 		createButton.setMinimumSize(new Dimension(20, 30));
@@ -71,6 +80,8 @@ public class MyCalendarTester {
 				
 				JTextField eventDate = new JTextField();
 				//eventDate.setText(model.getDateDescription2(cal));
+				eventDate.setText(myCal.getDateString(cal));
+				System.out.println(myCal.getDateString(cal));
 				eventDate.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 				eventDate.setEditable(false);
 
@@ -153,19 +164,26 @@ public class MyCalendarTester {
 			}
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					System.out.println("button pressed");
+					System.out.println("button presseddd");
 					System.out.println("name: " + button.getName());
+					cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(button.getName())); //change the corresponding calendar as well. fix for create
 					JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 					JButton prevButton = myCal.listOfButtons.get(currentDate-1);
 					prevButton.setBorder(BorderFactory.createEmptyBorder());
 					currentDate = Integer.parseInt(button.getName());
-					JTextArea dayText = new JTextArea();
+//					dayText = new JTextArea();
 					rightPanel.removeAll();
 					dayText.removeAll();
 					dayText.setText("well let's see " + button.getName());
 					System.out.println("button.getName(): " + button.getName());
-					rightPanel.add(dayText);
+					rightPanel.add(dayText, BorderLayout.NORTH);
+					String events = myCal.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
+					System.out.println("events: " + events);
+					rightPanel.removeAll();
+					dayEventsText.setText(events);
+					rightPanel.add(dayEventsText, BorderLayout.SOUTH);
+					rightPanel.repaint();
 					rightPanel.setVisible(true);
 				}
 			});
@@ -178,17 +196,19 @@ public class MyCalendarTester {
 				System.out.println("previous button");
 				if (currentDate > 1) {
 					currentDate--;
+					cal.add(Calendar.DAY_OF_MONTH, -1);
 					System.out.println("current: " + currentDate);
 					JButton b = myCal.listOfButtons.get(currentDate-1);
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 					JButton prevButton = myCal.listOfButtons.get(currentDate);
 					prevButton.setBorder(BorderFactory.createEmptyBorder());
+					cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(b.getName()));
 					JTextArea dayText = new JTextArea();
 					rightPanel.removeAll();
 					dayText.removeAll();
 					dayText.setText("well let's see " + b.getName());
 					System.out.println("button.getName(): " + b.getName());
-					rightPanel.add(dayText);
+					rightPanel.add(dayText, BorderLayout.NORTH);
 					rightPanel.setVisible(true);
 				} else { //go to previous month
 					cal.add(Calendar.MONTH, -1);
@@ -197,6 +217,8 @@ public class MyCalendarTester {
 					monthTextArea.removeAll();
 					calendarPanel.removeAll();
 					monthTextArea.setText(month); 
+					System.out.println(myCal.getTodayDate());
+					cal.set(Calendar.DAY_OF_MONTH, myCal.getTodayDate());
 					currentDate = myCal.getNumberOfDays();
 					System.out.println("currentdate: " + currentDate);
 					for (int i = 0; i < myCal.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
@@ -217,9 +239,10 @@ public class MyCalendarTester {
 						}
 						button.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								System.out.println("button pressed");
+								System.out.println("button pressed");		//here
+//								cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(button.getName()));
 								System.out.println("name: " + button.getName());
-								JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
+								JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);  
 								b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 								JButton prevButton = myCal.listOfButtons.get(currentDate-1);
 								prevButton.setBorder(BorderFactory.createEmptyBorder());
@@ -229,7 +252,7 @@ public class MyCalendarTester {
 								dayText.removeAll();
 								dayText.setText("well let's see " + button.getName());
 								System.out.println("button.getName(): " + button.getName());
-								rightPanel.add(dayText);
+								rightPanel.add(dayText, BorderLayout.NORTH);
 								rightPanel.setVisible(true);
 							}
 						});
@@ -237,6 +260,12 @@ public class MyCalendarTester {
 					calendarPanel.repaint();
 					monthTextArea.repaint();
 				}
+				String events = myCal.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
+				System.out.println("events: " + events);
+				dayEventsText.removeAll();
+				dayEventsText.setText(events);
+				rightPanel.add(dayEventsText, BorderLayout.SOUTH);
+				rightPanel.repaint();
 			}
 		});
 		
@@ -247,6 +276,7 @@ public class MyCalendarTester {
 				int numberOfDays = myCal.getNumberOfDays();
 				if (currentDate < numberOfDays){
 					currentDate++;
+					cal.add(Calendar.DAY_OF_MONTH, 1);
 					System.out.println("current: " + currentDate);
 					JButton b = myCal.listOfButtons.get(currentDate-1);
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -257,9 +287,10 @@ public class MyCalendarTester {
 					dayText.removeAll();
 					dayText.setText("well let's see " + b.getName());
 					System.out.println("button.getName(): " + b.getName());
-					rightPanel.add(dayText);
+					rightPanel.add(dayText, BorderLayout.NORTH);
 					rightPanel.setVisible(true);
 				} else { //go to next month
+					System.out.println("initial month: " + cal.get(Calendar.MONTH));
 					cal.add(Calendar.MONTH, 1);
 					cal.set(Calendar.DAY_OF_MONTH, 1);
 					String toDisplay = myCal.displayMainMenu(cal);
@@ -293,12 +324,14 @@ public class MyCalendarTester {
 								JButton prevButton = myCal.listOfButtons.get(currentDate-1);
 								prevButton.setBorder(BorderFactory.createEmptyBorder());
 								currentDate = Integer.parseInt(button.getName());
-								JTextArea dayText = new JTextArea();
+//								JTextArea dayText = new JTextArea();
 								rightPanel.removeAll();
 								dayText.removeAll();
+								int text = cal.get(Calendar.DAY_OF_WEEK);
+								
 								dayText.setText("well let's see " + button.getName());
 								System.out.println("button.getName(): " + button.getName());
-								rightPanel.add(dayText);
+								rightPanel.add(dayText, BorderLayout.NORTH);
 								rightPanel.setVisible(true);
 							}
 						});
@@ -306,7 +339,15 @@ public class MyCalendarTester {
 					
 					calendarPanel.repaint();
 					monthTextArea.repaint();
+					
 				}
+//				cal.add(Calendar.MONTH, 1);
+				String events = myCal.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
+				System.out.println("events: " + events);
+				dayEventsText.removeAll();
+				dayEventsText.setText(events);
+				rightPanel.add(dayEventsText, BorderLayout.SOUTH);
+				rightPanel.repaint();
 			}
 		});
 		
@@ -344,11 +385,11 @@ public class MyCalendarTester {
 		overarchingFrame.add(rightPanel, BorderLayout.EAST);
 		overarchingFrame.pack();
 		overarchingFrame.setVisible(true);
-		displayOptions();
-		Scanner sc = new Scanner(System.in);
-		String input = sc.nextLine().toLowerCase();
+//		displayOptions();
+//		Scanner sc = new Scanner(System.in);
+//		String input = sc.nextLine().toLowerCase();
 		
-		
+		//CLICKING DOESN'T CHANGE THE DATE IN THE CREATE BOX
 		
 		
 //		while (true) {
@@ -390,6 +431,7 @@ public class MyCalendarTester {
 //
 //		}
 	}
+	
 	
 	
 	
