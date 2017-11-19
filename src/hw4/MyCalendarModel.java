@@ -217,7 +217,7 @@ public class MyCalendarModel {
 						Integer.parseInt(monthNameToNumber(month)), Integer.parseInt(date));
 				// treeSET
 				if (calendarToEvent.get(key) == null) { // there are no events under this date
-					TreeSet treeSetForMap = new TreeSet<Event>();
+					TreeSet<Event> treeSetForMap = new TreeSet<Event>();
 					treeSetForMap.add(toAddToMap);
 					calendarToEvent.put(key, treeSetForMap);
 				} else { // there are already events, add event to the treeset
@@ -425,7 +425,7 @@ public class MyCalendarModel {
 
 		GregorianCalendar calendar = new GregorianCalendar(toAdd.getYear(), toAdd.getMonth(), toAdd.getDay());
 		if (calendarToEvent.get(calendar) == null) { // there are no events under this date
-			TreeSet treeSetForMap = new TreeSet<Event>();
+			TreeSet<Event>treeSetForMap = new TreeSet<Event>();
 			treeSetForMap.add(toAdd);
 			calendarToEvent.put(calendar, treeSetForMap);
 		} else { // there are already events, add event to the treeset
@@ -440,6 +440,63 @@ public class MyCalendarModel {
 				calendarToEvent.get(calendar).add(toAdd); // THAT'S WHAT IT USED TO BE calendarToEvent.get(toAdd.getDate()).add(toAdd);
 			}
 		}
+	}
+	
+	
+	
+	public static String dateDisplay(Calendar cal) {
+		LONGDAYS[] arrayOfDays = LONGDAYS.values();
+		String toReturn = cal.get(Calendar.MONTH)+1 + "/" + cal.get(Calendar.DAY_OF_MONTH);
+		toReturn = arrayOfDays[cal.get(Calendar.DAY_OF_WEEK)-1] + " " + toReturn;
+		return toReturn;
+	}
+	
+	
+	
+	/**
+	 * overload of create. creates a new event
+	 * @param title title of event
+	 * @param date date of event
+	 * @startTime starting time
+	 * @endTime ending time 
+	 */
+	public static boolean create(String title, String date, String startTime, String endTime) {
+		boolean canAdd = true;
+		if (date.length() != 10) { //not in the correct format MM/DD/YYYY
+			String month = date.substring(0, date.indexOf("/"));
+			System.out.println("month within create: " + month);
+			if (month.length() != 2) {
+				month = "0" + month;
+			}
+			String day = date.substring(date.indexOf("/") + 1, date.indexOf("/", date.indexOf("/") + 1));
+			System.out.println("day within create: " + day);
+			if (day.length() != 2) {
+				day = "0" + day;
+			}
+			String year = date.substring(date.indexOf("/", date.indexOf("/") + 1) + 1);
+			System.out.println("year within create: " + year);
+			date = month + "/" + day + "/" + year;
+		}
+		Event toAdd = new Event(title, date, startTime, endTime);
+
+		GregorianCalendar calendar = new GregorianCalendar(toAdd.getYear(), toAdd.getMonth(), toAdd.getDay());
+		if (calendarToEvent.get(calendar) == null) { // there are no events under this date
+			TreeSet<Event> treeSetForMap = new TreeSet<Event>();
+			treeSetForMap.add(toAdd);
+			calendarToEvent.put(calendar, treeSetForMap);
+		} else { // there are already events, add event to the treeset
+			
+			for (Event e : calendarToEvent.get(calendar)) {
+				if (e.conflictCheck(toAdd)) { //check this (e.getIntEndTime()) < (toAdd.getIntStartTime()) ////return true if there is a conflict, false if there isn't
+					System.out.println("Sorry can't add that event, there is a conflict");
+					canAdd = false;
+				}
+			}
+			if (canAdd) {
+				calendarToEvent.get(calendar).add(toAdd); // THAT'S WHAT IT USED TO BE calendarToEvent.get(toAdd.getDate()).add(toAdd);
+			}
+		}
+		return canAdd;
 	}
 
 	// go to

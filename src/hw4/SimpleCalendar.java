@@ -27,23 +27,24 @@ public class SimpleCalendar {
 	static int currentDate;
 	private static JTextArea dayText = new JTextArea();
 	private static JTextArea dayEventsText = new JTextArea();
+	private static JPanel calendarPanel = new JPanel();	
+	
 	public static void main(String[] args) {
 		/*
 		 * should create new myCalendar object
 		 */
 		MyCalendarModel myCal = new MyCalendarModel();
 		GregorianCalendar cal = new GregorianCalendar();
-		myCal.load();
-		String toDisplay = myCal.displayMainMenu(cal);
+		MyCalendarModel.load();
+		String toDisplay = MyCalendarModel.displayMainMenu(cal);
 	
 		
-		String month = myCal.getMonthString();
+		String month = MyCalendarModel.getMonthString();
 		JLabel daysOfWeek = new JLabel("Su         Mo       Tu       We       Th       Fr      Sa");
 		System.out.println("month: " + month);
 		JLabel monthTextArea = new JLabel(month); 
 		monthTextArea.setHorizontalAlignment(JLabel.CENTER);
-		monthTextArea.setVerticalAlignment(JLabel.CENTER);
-		JPanel calendarPanel = new JPanel();		
+		monthTextArea.setVerticalAlignment(JLabel.CENTER);	
 		JPanel leftPanel = new JPanel();	
 		JFrame overarchingFrame = new JFrame();
 		JPanel rightPanel = new JPanel();
@@ -53,6 +54,9 @@ public class SimpleCalendar {
 		rightPanel.setLayout(new BorderLayout());
 		
 		
+		String toDisplayDate = MyCalendarModel.dateDisplay(cal);
+		dayText.setText(toDisplayDate);
+		rightPanel.add(dayText, BorderLayout.NORTH);
 		
 		JLabel createButton = new JLabel("CREATE");
 		createButton.setMinimumSize(new Dimension(20, 30));
@@ -78,10 +82,11 @@ public class SimpleCalendar {
 				eventName.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
 				
+				
 				JTextField eventDate = new JTextField();
 				//eventDate.setText(model.getDateDescription2(cal));
-				eventDate.setText(myCal.getDateString(cal));
-				System.out.println(myCal.getDateString(cal));
+				eventDate.setText(MyCalendarModel.getDateString(cal));
+				System.out.println(MyCalendarModel.getDateString(cal));
 				eventDate.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 				eventDate.setEditable(false);
 
@@ -102,14 +107,37 @@ public class SimpleCalendar {
 				eventEndTime.setText("23:59");
 				eventEndTime.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 				
+				
+				JButton saveButton = new JButton("SAVE");
+				saveButton.addActionListener(
+						new ActionListener()
+						{
+							public void actionPerformed(ActionEvent e)
+							{
+								String title = eventName.getText();
+								String date = eventDate.getText();
+								String startTime = eventStartTime.getText();
+								String endTime = eventEndTime.getText();
+								boolean added = MyCalendarModel.create(title, date, startTime, endTime);
+								if (added == false) {
+									JOptionPane.showMessageDialog(new JDialog(), "Sorry can't add that event, there is a conflict");
+									createDialog.dispose();
+								}
+								dayEventsText.repaint();
+								createDialog.dispose();
+							}
+						});
+				
 				textFieldPanel.add(eventDate);
 				textFieldPanel.add(eventStartTime);
 				textFieldPanel.add(eventEndTime);
+				textFieldPanel.add(saveButton);
 
 				createDialog.add(eventName, BorderLayout.NORTH);
 				createDialog.add(textFieldPanel, BorderLayout.SOUTH);
 				
 				createDialog.setVisible(true);
+				dayEventsText.repaint();
 				
 			}
 
@@ -146,19 +174,14 @@ public class SimpleCalendar {
 		createAndMonthPanel.add(daysOfWeek, BorderLayout.SOUTH);
 		createAndMonthPanel.add(monthTextArea, BorderLayout.CENTER);
 		
-		for (int i = 0; i < myCal.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
-			JButton button = new JButton();
-			button.setEnabled(false);
-			button.setBorder(BorderFactory.createEmptyBorder());
-			calendarPanel.add(button);
-		}
-		for (int i = 0; i < myCal.listOfButtons.size(); i++) {
-			JButton button = myCal.listOfButtons.get(i);
+		addSpaces();
+		for (int i = 0; i < MyCalendarModel.listOfButtons.size(); i++) {
+			JButton button = MyCalendarModel.listOfButtons.get(i);
 			calendarPanel.add(button);
 			button.setName(Integer.toString(i+1));
-			if (button.getName().equals(Integer.toString(myCal.getTodayDate()))) { //todays date
+			if (button.getName().equals(Integer.toString(MyCalendarModel.getTodayDate()))) { //todays date
 				button.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-				currentDate = myCal.getTodayDate();
+				currentDate = MyCalendarModel.getTodayDate();
 			} else {
 				button.setBorder(BorderFactory.createEmptyBorder());
 			}
@@ -167,18 +190,18 @@ public class SimpleCalendar {
 					System.out.println("button presseddd");
 					System.out.println("name: " + button.getName());
 					cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(button.getName())); //change the corresponding calendar as well. fix for create
-					JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
+					JButton b = MyCalendarModel.listOfButtons.get(Integer.parseInt(button.getName())-1);
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-					JButton prevButton = myCal.listOfButtons.get(currentDate-1);
+					JButton prevButton = MyCalendarModel.listOfButtons.get(currentDate-1);
 					prevButton.setBorder(BorderFactory.createEmptyBorder());
 					currentDate = Integer.parseInt(button.getName());
-//					dayText = new JTextArea();
 					rightPanel.removeAll();
 					dayText.removeAll();
-					dayText.setText("well let's see " + button.getName());
+					String toDisplay = MyCalendarModel.dateDisplay(cal);
+					dayText.setText(toDisplay);
 					System.out.println("button.getName(): " + button.getName());
 					rightPanel.add(dayText, BorderLayout.NORTH);
-					String events = myCal.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
+					String events = MyCalendarModel.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
 					System.out.println("events: " + events);
 					rightPanel.removeAll();
 					dayEventsText.setText(events);
@@ -198,37 +221,33 @@ public class SimpleCalendar {
 					currentDate--;
 					cal.add(Calendar.DAY_OF_MONTH, -1);
 					System.out.println("current: " + currentDate);
-					JButton b = myCal.listOfButtons.get(currentDate-1);
+					JButton b = MyCalendarModel.listOfButtons.get(currentDate-1);
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-					JButton prevButton = myCal.listOfButtons.get(currentDate);
+					JButton prevButton = MyCalendarModel.listOfButtons.get(currentDate);
 					prevButton.setBorder(BorderFactory.createEmptyBorder());
 					cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(b.getName()));
 					JTextArea dayText = new JTextArea();
 					rightPanel.removeAll();
 					dayText.removeAll();
-					dayText.setText("well let's see " + b.getName());
+					String toDisplay = MyCalendarModel.dateDisplay(cal);
+					dayText.setText(toDisplay);
 					System.out.println("button.getName(): " + b.getName());
 					rightPanel.add(dayText, BorderLayout.NORTH);
 					rightPanel.setVisible(true);
 				} else { //go to previous month
 					cal.add(Calendar.MONTH, -1);
-					String toDisplay = myCal.displayMainMenu(cal);
-					String month = myCal.getMonthString();
+					String toDisplay = MyCalendarModel.displayMainMenu(cal);
+					String month = MyCalendarModel.getMonthString();
 					monthTextArea.removeAll();
 					calendarPanel.removeAll();
 					monthTextArea.setText(month); 
-					System.out.println(myCal.getTodayDate());
-					cal.set(Calendar.DAY_OF_MONTH, myCal.getTodayDate());
-					currentDate = myCal.getNumberOfDays();
+					System.out.println(MyCalendarModel.getTodayDate());
+					cal.set(Calendar.DAY_OF_MONTH, MyCalendarModel.getTodayDate());
+					currentDate = MyCalendarModel.getNumberOfDays();
 					System.out.println("currentdate: " + currentDate);
-					for (int i = 0; i < myCal.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
-						JButton button = new JButton();
-						button.setEnabled(false);
-						button.setBorder(BorderFactory.createEmptyBorder());
-						calendarPanel.add(button);
-					}
-					for (int i = 0; i < myCal.listOfButtons.size(); i++) {
-						JButton button = myCal.listOfButtons.get(i);
+					addSpaces();
+					for (int i = 0; i < MyCalendarModel.listOfButtons.size(); i++) {
+						JButton button = MyCalendarModel.listOfButtons.get(i);
 						calendarPanel.add(button);
 						button.setName(Integer.toString(i+1));
 						if (button.getName().equals(Integer.toString(currentDate))) { //todays date
@@ -242,15 +261,15 @@ public class SimpleCalendar {
 								System.out.println("button pressed");		//here
 //								cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(button.getName()));
 								System.out.println("name: " + button.getName());
-								JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);  
+								JButton b = MyCalendarModel.listOfButtons.get(Integer.parseInt(button.getName())-1);  
 								b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-								JButton prevButton = myCal.listOfButtons.get(currentDate-1);
+								JButton prevButton = MyCalendarModel.listOfButtons.get(currentDate-1);
 								prevButton.setBorder(BorderFactory.createEmptyBorder());
 								currentDate = Integer.parseInt(button.getName());
-								JTextArea dayText = new JTextArea();
 								rightPanel.removeAll();
-								dayText.removeAll();
-								dayText.setText("well let's see " + button.getName());
+//								cal.add(Calendar.MONTH, 1);
+								String toDisplay = MyCalendarModel.dateDisplay(cal);
+								dayText.setText(toDisplay);
 								System.out.println("button.getName(): " + button.getName());
 								rightPanel.add(dayText, BorderLayout.NORTH);
 								rightPanel.setVisible(true);
@@ -260,7 +279,7 @@ public class SimpleCalendar {
 					calendarPanel.repaint();
 					monthTextArea.repaint();
 				}
-				String events = myCal.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
+				String events = MyCalendarModel.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
 				System.out.println("events: " + events);
 				dayEventsText.removeAll();
 				dayEventsText.setText(events);
@@ -273,19 +292,20 @@ public class SimpleCalendar {
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("next button");
-				int numberOfDays = myCal.getNumberOfDays();
+				int numberOfDays = MyCalendarModel.getNumberOfDays();
 				if (currentDate < numberOfDays){
 					currentDate++;
 					cal.add(Calendar.DAY_OF_MONTH, 1);
 					System.out.println("current: " + currentDate);
-					JButton b = myCal.listOfButtons.get(currentDate-1);
+					JButton b = MyCalendarModel.listOfButtons.get(currentDate-1);
 					b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-					JButton prevButton = myCal.listOfButtons.get(currentDate-2);
+					JButton prevButton = MyCalendarModel.listOfButtons.get(currentDate-2);
 					prevButton.setBorder(BorderFactory.createEmptyBorder());
 					JTextArea dayText = new JTextArea();
 					rightPanel.removeAll();
 					dayText.removeAll();
-					dayText.setText("well let's see " + b.getName());
+					String toDisplay = MyCalendarModel.dateDisplay(cal);
+					dayText.setText(toDisplay);
 					System.out.println("button.getName(): " + b.getName());
 					rightPanel.add(dayText, BorderLayout.NORTH);
 					rightPanel.setVisible(true);
@@ -293,25 +313,20 @@ public class SimpleCalendar {
 					System.out.println("initial month: " + cal.get(Calendar.MONTH));
 					cal.add(Calendar.MONTH, 1);
 					cal.set(Calendar.DAY_OF_MONTH, 1);
-					String toDisplay = myCal.displayMainMenu(cal);
-					String month = myCal.getMonthString();
+					String toDisplay = MyCalendarModel.displayMainMenu(cal);
+					String month = MyCalendarModel.getMonthString();
 					monthTextArea.removeAll();
 					calendarPanel.removeAll();
 					monthTextArea.setText(month);
 					currentDate = 1;
-					for (int i = 0; i < myCal.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
-						JButton button = new JButton();
-						button.setEnabled(false);
-						button.setBorder(BorderFactory.createEmptyBorder());
-						calendarPanel.add(button);
-					}
-					for (int i = 0; i < myCal.listOfButtons.size(); i++) {
-						JButton button = myCal.listOfButtons.get(i);
+					addSpaces();
+					for (int i = 0; i < MyCalendarModel.listOfButtons.size(); i++) {
+						JButton button = MyCalendarModel.listOfButtons.get(i);
 						calendarPanel.add(button);
 						button.setName(Integer.toString(i+1));
-						if (button.getName().equals(Integer.toString(myCal.getTodayDate()))) { //todays date
+						if (button.getName().equals(Integer.toString(MyCalendarModel.getTodayDate()))) { //todays date
 							button.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-							currentDate = myCal.getTodayDate();
+							currentDate = MyCalendarModel.getTodayDate();
 						} else {
 							button.setBorder(BorderFactory.createEmptyBorder());
 						}
@@ -319,17 +334,15 @@ public class SimpleCalendar {
 							public void actionPerformed(ActionEvent e) {
 								System.out.println("button pressed");
 								System.out.println("name: " + button.getName());
-								JButton b = myCal.listOfButtons.get(Integer.parseInt(button.getName())-1);
+								JButton b = MyCalendarModel.listOfButtons.get(Integer.parseInt(button.getName())-1);
 								b.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-								JButton prevButton = myCal.listOfButtons.get(currentDate-1);
+								JButton prevButton = MyCalendarModel.listOfButtons.get(currentDate-1);
 								prevButton.setBorder(BorderFactory.createEmptyBorder());
 								currentDate = Integer.parseInt(button.getName());
-//								JTextArea dayText = new JTextArea();
 								rightPanel.removeAll();
-								dayText.removeAll();
-								int text = cal.get(Calendar.DAY_OF_WEEK);
-								
-								dayText.setText("well let's see " + button.getName());
+								dayText.removeAll();								
+								String toDisplay = MyCalendarModel.dateDisplay(cal);
+								dayText.setText(toDisplay);
 								System.out.println("button.getName(): " + button.getName());
 								rightPanel.add(dayText, BorderLayout.NORTH);
 								rightPanel.setVisible(true);
@@ -342,7 +355,7 @@ public class SimpleCalendar {
 					
 				}
 //				cal.add(Calendar.MONTH, 1);
-				String events = myCal.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
+				String events = MyCalendarModel.getValues(cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.YEAR));
 				System.out.println("events: " + events);
 				dayEventsText.removeAll();
 				dayEventsText.setText(events);
@@ -356,11 +369,11 @@ public class SimpleCalendar {
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("quit button");
-				
+				MyCalendarModel.quit();
+				overarchingFrame.dispose();
+				System.exit(0);
 			}
 		});
-		
-	
 		
 		
 		previousNextQuitPanel.setLayout(new FlowLayout());
@@ -385,54 +398,17 @@ public class SimpleCalendar {
 		overarchingFrame.add(rightPanel, BorderLayout.EAST);
 		overarchingFrame.pack();
 		overarchingFrame.setVisible(true);
-//		displayOptions();
-//		Scanner sc = new Scanner(System.in);
-//		String input = sc.nextLine().toLowerCase();
-		
-		//CLICKING DOESN'T CHANGE THE DATE IN THE CREATE BOX
-		
-		
-//		while (true) {
-//			if (input.equals("l")) {
-//				myCal.load();
-//				myCal.displayMainMenu(cal);
-//				displayOptions();
-//				input = sc.nextLine().toLowerCase();
-//				// need to display calendar WITH EVENTS
-//
-//			} else if (input.equals("v")) {
-//				myCal.viewBy();
-//				myCal.displayMainMenu(cal);
-//				displayOptions();
-//				input = sc.nextLine().toLowerCase();
-//			} else if (input.equals("c")) {
-//				myCal.create();
-//				myCal.displayMainMenu(cal);
-//				displayOptions();
-//				input = sc.nextLine().toLowerCase();
-//			} else if (input.equals("g")) {
-//				myCal.goTo();
-//				displayOptions();
-//				input = sc.nextLine().toLowerCase();
-//			} else if (input.equals("e")) {
-//				myCal.eventList();
-//				myCal.displayMainMenu(cal);
-//				displayOptions();
-//				input = sc.nextLine().toLowerCase();
-//			} else if (input.equals("d")) {
-//				myCal.delete();
-//				myCal.displayMainMenu(cal);
-//				displayOptions();
-//				input = sc.nextLine().toLowerCase();
-//			} else /* if (input.equals("q")) */ {
-//				myCal.quit();
-//				break;
-//			}
-//
-//		}
 	}
 	
 	
+	public static void addSpaces() {
+		for (int i = 0; i < MyCalendarModel.getSpaceCounter(); i++) {  	//add spaces so month starts at the right day
+			JButton button = new JButton();
+			button.setEnabled(false);
+			button.setBorder(BorderFactory.createEmptyBorder());
+			calendarPanel.add(button);
+		}
+	}
 	
 	
 	/**
