@@ -9,7 +9,6 @@ import java.util.GregorianCalendar;
  *
  */
 public class Event implements Comparable<Event> {
-	// CREATE GETTERS/SETTERS FOR ALL OF THESE
 	private String title;
 	private String stringDate;
 	private int month, day, year;

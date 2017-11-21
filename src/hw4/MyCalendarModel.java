@@ -55,6 +55,10 @@ public class MyCalendarModel {
 	}
 	
 	
+	/**
+	 * returns current date
+	 * @return current date
+	 */
 	public static int getTodayDate() {
 		return todayDate;
 	}
@@ -110,6 +114,10 @@ public class MyCalendarModel {
 		}
 	}
 
+	/**
+	 * returns month
+	 * @return month
+	 */
 	public static String getMonthString() {
 		return monthString;
 	}
@@ -376,8 +384,19 @@ public class MyCalendarModel {
 		return toReturn;
 	}
 	
+	/**
+	 * overloaded method to get the events on a day
+	 * @param month the month to get events from
+	 * @param date the day of month to get events from
+	 * @param year the year to get events from
+	 * @return
+	 */
 	public static String getValues(int month, int date, int year) {
-		Calendar calendar = new GregorianCalendar((year), (month), (date));
+		System.out.println("month::: " + month + " date::: " + date + " year::: " + year);
+		GregorianCalendar calendar = new GregorianCalendar(year, month, date);
+		calendar.set(Calendar.MONTH, month);
+		calendar.set(Calendar.DAY_OF_MONTH, date);
+		calendar.set(Calendar.YEAR, year);
 		System.out.println("monthV: " + calendar.get(Calendar.MONTH) + "dayV: " + calendar.get(Calendar.DAY_OF_MONTH) + "yearV: " + calendar.get(Calendar.YEAR));
 		String toReturn = "";
 		TreeSet<Event> values = calendarToEvent.get(calendar);
@@ -443,7 +462,11 @@ public class MyCalendarModel {
 	}
 	
 	
-	
+	/**
+	 * another way to represent the day
+	 * @param cal the calendar
+	 * @return string representation of the day
+	 */
 	public static String dateDisplay(Calendar cal) {
 		LONGDAYS[] arrayOfDays = LONGDAYS.values();
 		String toReturn = cal.get(Calendar.MONTH)+1 + "/" + cal.get(Calendar.DAY_OF_MONTH);
@@ -584,6 +607,11 @@ public class MyCalendarModel {
 		}
 	}
 	
+	/**
+	 * returns string representation of the date to display
+	 * @param cal the calendar
+	 * @return string representation of the date to display
+	 */
 	public static String getDateString(Calendar cal) {
 		String month = Integer.toString(cal.get(Calendar.MONTH)+1);
 		String day = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
@@ -603,6 +631,10 @@ public class MyCalendarModel {
 		return toReturn;
 	}
 	
+	/**
+	 * returns number of spaces to offset the beginning of the month by 
+	 * @return number of spaces to offset the beginning of the month by 
+	 */
 	public static int getSpaceCounter() {
 		return spaceCounter;
 	}
